@@ -19,35 +19,28 @@ public class CategoriaServiceImpl implements ICategoriaService {
     @Override
     @Transactional
     public Categoria inserirNovaCategoria(Categoria categoria) {
-        try{
-            if (categoria.getNome() != null && !categoria.getNome().isEmpty()){
-                return dao.save(categoria);
-            }
-        } catch (IllegalArgumentException  e) {
-            System.out.println("Erro ao inserir nova categoria: " + e.getMessage());
-        } catch (Exception e) {
-            System.out.println("Erro ao inserir nova categoria: " + e.getMessage());
+        if (categoria.getNome() != null && !categoria.getNome().isEmpty()) {
+            return dao.save(categoria);
         }
-        return null;
+        throw new IllegalArgumentException("Nome da categoria não pode ser nulo");
     }
 
     @Override
+    @Transactional
     public Categoria alterarCategoria(Categoria categoria) {
-        try{
-            if(categoria.getId() != null && categoria.getNome() != null && !categoria.getNome().isEmpty()) {
-                Categoria categoriaDB = dao.findById(categoria.getId()).orElse(null);
-                if (categoriaDB != null) {
-                    categoriaDB.setNome(categoria.getNome());
-                    return dao.save(categoriaDB);
-                }
+        if(categoria.getId() != null && categoria.getNome() != null && !categoria.getNome().isEmpty()) {
+            Categoria categoriaDB = dao.findById(categoria.getId()).orElse(null);
+            if (categoriaDB != null) {
+                categoriaDB.setNome(categoria.getNome());
+                return dao.save(categoriaDB);
             }
-        } catch(Exception e) {
-        System.out.println("Erro ao alterar categoria: " + e.getMessage());
+
         }
-        return null;
+        throw new IllegalArgumentException("Categoria não encontrada");
     }
 
     @Override
+    @Transactional
     public void excluirCategoria(int id) {
         try {
             dao.deleteById(id);
@@ -58,12 +51,18 @@ public class CategoriaServiceImpl implements ICategoriaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Categoria> recuperarTodasCategorias() {
         return dao.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Categoria> recuperarPorPalavraChave(String palavraChave) {
-        return null;
+        if (palavraChave != null && !palavraChave.isEmpty()){
+            return dao.findByNomeContaining(palavraChave);
+        } else {
+            throw new IllegalArgumentException("Palavra chave não pode ser nula");
+        }
     }
 }
